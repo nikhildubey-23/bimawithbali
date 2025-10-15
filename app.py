@@ -253,8 +253,8 @@ def send_email():
         to_email = data.get('to')
         name = data.get('name')
         from_email = data.get('email')
-        subject = data.get('subject')
-        message = data.get('message')
+        subject = request.form.get('subject')
+        message = request.form.get('message')
         files = {}
     else:
         to_email = request.form.get('to')
@@ -298,26 +298,27 @@ def send_email():
         return jsonify({"message": "Email sent successfully"}), 200
     except Exception as e:
         app.logger.error(f"Error sending email: {e}")
-        return jsonify({"error": str(e)}), 500
+        return jsonify({"error": "Failed to send email. Please try again later."}), 500
 
 @app.route('/api/chat', methods=['POST'])
 def chat():
-    data = request.json
-    user_message = data.get('message', '')
-
-    # Prepend instructions to restrict chatbot responses to insurance/bima topics, short and precise
-    prompt = (
-        "Only answer insurance or bima questions. Keep answers short, precise, detailed. "
-        "If unrelated, say 'I only answer insurance questions.' "
-        "Question: " + user_message
-    )
-
-    # Use Gemini API to generate response
     try:
+        data = request.json
+        user_message = data.get('message', '')
+
+        # Prepend instructions to restrict chatbot responses to insurance/bima topics, short and precise
+        prompt = (
+            "Only answer insurance or bima questions. Keep answers short, precise, detailed. "
+            "If unrelated, say 'I only answer insurance questions.' "
+            "Question: " + user_message
+        )
+
+        # Use Gemini API to generate response
         response = model.generate_content(prompt)
         response_text = response.text
     except Exception as e:
-        response_text = f"Error generating response: {str(e)}"
+        app.logger.error(f"Error in chat endpoint: {str(e)}")
+        response_text = "Sorry, I'm unable to respond right now. Please try again later."
 
     return jsonify({'response': response_text})
 
@@ -325,5 +326,5 @@ def chat():
 def static_files(filename):
     return send_from_directory('public', filename)
 
-if __name__ == '__main__':
-    app.run(debug=True)
+# Export the app for WSGI (required for Vercel serverless)
+application = app
