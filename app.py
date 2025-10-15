@@ -7,13 +7,13 @@ from email.mime.multipart import MIMEMultipart
 from email.mime.base import MIMEBase
 from email import encoders
 
-app = Flask(__name__, static_folder='public', static_url_path='/static')
+app = Flask(__name__, static_folder='public', static_url_path='/static', template_folder='templates')
 
 # Configure Gemini API
 api_key = os.environ.get('GEMINI_API_KEY', 'AIzaSyBNDr4rWhCFZoDGgVqN1l4YbtnVBHfUWNM')
 genai.configure(api_key=api_key)
 model = genai.GenerativeModel(
-    'gemini-1.5-flash',
+    'gemini-2.0-flash-exp',
     generation_config=genai.GenerationConfig(
         temperature=0.0,
         max_output_tokens=150,
